@@ -67,6 +67,11 @@ export const useFamilyStore = defineStore('family', () => {
     await persist()
   }
 
+  async function applyRelationRepair(repaired: FamilyMember[]) {
+    members.value = repaired
+    await persist()
+  }
+
   async function removeMember(id: string) {
     const descendantIds = new Set<string>([id])
     let changed = true
@@ -89,5 +94,5 @@ export const useFamilyStore = defineStore('family', () => {
     await persist()
   }
 
-  return { members, loading, tree, memberOptions, hydrate, persist, getById, relations, addMember, updateMember, removeMember }
+  return { members, loading, tree, memberOptions, hydrate, persist, getById, relations, addMember, updateMember, applyRelationRepair, removeMember }
 })

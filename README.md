@@ -5,6 +5,7 @@ LegacyTree 是一个纯前端的数字遗产与家谱管理平台，用于构建
 ## 功能介绍
 
 - 家谱树：D3.js 渲染交互式树，支持缩放、平移、搜索、居中、全屏、SVG 导出、节点详情抽屉、配偶虚线关系。
+- 档案整备：家谱树页按成员汇总出生地、简介、头像、故事、照片和有效遗产规划（已定稿）的完成度与待补项，点击成员行进入成员页；可一键补齐单向父母子女关系、清理失效编号，原有内容冲突时保留两份并说明原因，保存后家谱树与成员详情同步更新。
 - 成员详情：展示头像、性别、生卒年份、出生地、简介、故事时间线、照片画廊、亲属关系和遗产规划。
 - 家族故事：按回忆、成就、趣事、家训分类筛选，可在卡片和时间线视图之间切换。
 - 老照片馆：照片墙、年份时间轴、Canvas 基础修复滤镜、修复前后状态展示。
@@ -38,15 +39,15 @@ npm run dev
 ```text
 src/
 ├── stores/        # familyStore.ts, storyStore.ts, photoStore.ts, legacyStore.ts, settingsStore.ts
-├── types/         # family.d.ts, story.d.ts, photo.d.ts, legacy.d.ts, settings.d.ts, import-export.d.ts
+├── types/         # family.d.ts, story.d.ts, photo.d.ts, legacy.d.ts, settings.d.ts, import-export.d.ts, archive.d.ts, relation-repair.d.ts
 ├── constants/     # enums.ts, default-templates.ts
 ├── components/common/  # MemberAvatar, TimelineView, MediaGallery, EmptyState, ConfirmDialog, MessageBridge
-├── components/tree/    # FamilyTreeView, TreeNode, TreeControls
-├── hooks/         # useFamily(), useStory(), usePhoto(), useEncryption()
+├── components/tree/    # FamilyTreeView, TreeNode, TreeControls, ArchiveReadinessPanel
+├── hooks/         # useFamily(), useStory(), usePhoto(), useEncryption(), useArchiveReadiness()
 ├── pages/         # FamilyTree, MemberDetail, Stories, Photos, Legacy, Settings
 ├── router/        # index.ts, routes.ts, guards.ts
 ├── db/            # family-db.ts, story-db.ts, photo-db.ts, legacy-db.ts, secure-store.ts, index.ts
-├── utils/         # gedcom-parser.ts, crypto.ts, export.ts, image-filter.ts, member-status.ts, error-handler.ts
+├── utils/         # gedcom-parser.ts, crypto.ts, export.ts, image-filter.ts, member-status.ts, error-handler.ts, archive-readiness.ts, relation-repair.ts
 └── assets/        # 默认头像、空状态插画、图标
 ```
 
@@ -74,6 +75,14 @@ src/
 - 加密 JSON 导出：需要先设置加密密码，否则 Web Crypto 层会提示密钥未解锁。
 - GEDCOM 导入：`src/utils/gedcom-parser.ts` 支持读取 `INDI`、`NAME`、`SEX`、`BIRT DATE`、`DEAT DATE` 元素并转换为 FamilyMember。
 - GEDCOM 限制：当前版本不解析 `FAM`、`HUSB`、`WIFE`、`CHIL` 家庭关系块，因此导入后父子和配偶关系需要在家谱树中手动补充。
+
+## 档案整备说明
+
+- 完成度：`src/utils/archive-readiness.ts` 按成员检查六项——出生地、简介、头像、家族故事、老照片、有效遗产规划，每项记为已备或待补，完成度 = 已备项 / 6。
+- 有效遗产规划：仅统计状态为已定稿（finalized）的规划；草稿尚未定稿、归档已退役，均不计入。
+- 关系修复：`src/utils/relation-repair.ts` 为纯函数，先清理 parentId / childrenIds / spouseIds 中失效（成员不存在或指向自身）的编号并去重，再按现有记录补齐双向父母子女关系（只记一边时按另一边回填，成员列表顺序在先者优先），新补齐关系的成员世代编号随父母调整。
+- 冲突保留：子女的 parentId 与另一成员的子女列表指向不同父母时，两边记录都保留、不自动改写，面板中以「保留两份」标记说明原因，需人工确认后在成员页调整。
+- 保存生效：修复通过 `familyStore.applyRelationRepair` 整体写回 IndexedDB，家谱树与成员详情读取同一 store，保存后即同步变化。
 
 ## 全局异常处理说明
 
