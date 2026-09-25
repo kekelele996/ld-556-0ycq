@@ -5,6 +5,7 @@
       <h1>三代关系、婚姻连线与成员档案</h1>
     </div>
     <FamilyTreeView :roots="tree" @select="selectMember" @menu="selectMember" @add="openAdd = true" />
+    <ArchiveReadinessPanel />
     <n-drawer v-model:show="drawerOpen" width="360">
       <n-drawer-content v-if="selected" title="成员详情">
         <MemberAvatar :member="selected" size="lg" :deceased="Boolean(selected.deathDate)" />
@@ -32,6 +33,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import FamilyTreeView from '@/components/tree/FamilyTreeView.vue'
+import ArchiveReadinessPanel from '@/components/tree/ArchiveReadinessPanel.vue'
 import MemberAvatar from '@/components/common/MemberAvatar.vue'
 import { useFamily } from '@/hooks/useFamily'
 import { Gender, genderLabels } from '@/constants/enums'

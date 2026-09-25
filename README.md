@@ -5,6 +5,7 @@ LegacyTree 是一个纯前端的数字遗产与家谱管理平台，用于构建
 ## 功能介绍
 
 - 家谱树：D3.js 渲染交互式树，支持缩放、平移、搜索、居中、全屏、SVG 导出、节点详情抽屉、配偶虚线关系。
+- 档案整备：家谱树内按成员汇总出生地、简介、头像、故事、照片和有效遗产规划（已定稿），列出完成度与待补项，点击任一项进入成员页；关系整备可在父母子女关系只记一边或成员编号失效时，按现有记录补齐双向关系并清掉失效编号，原有内容冲突时保留两份并说明原因，保存后家谱树与成员详情同步变化。
 - 成员详情：展示头像、性别、生卒年份、出生地、简介、故事时间线、照片画廊、亲属关系和遗产规划。
 - 家族故事：按回忆、成就、趣事、家训分类筛选，可在卡片和时间线视图之间切换。
 - 老照片馆：照片墙、年份时间轴、Canvas 基础修复滤镜、修复前后状态展示。
@@ -38,15 +39,15 @@ npm run dev
 ```text
 src/
 ├── stores/        # familyStore.ts, storyStore.ts, photoStore.ts, legacyStore.ts, settingsStore.ts
-├── types/         # family.d.ts, story.d.ts, photo.d.ts, legacy.d.ts, settings.d.ts, import-export.d.ts
+├── types/         # family.d.ts, story.d.ts, photo.d.ts, legacy.d.ts, settings.d.ts, import-export.d.ts, archive.d.ts
 ├── constants/     # enums.ts, default-templates.ts
 ├── components/common/  # MemberAvatar, TimelineView, MediaGallery, EmptyState, ConfirmDialog, MessageBridge
-├── components/tree/    # FamilyTreeView, TreeNode, TreeControls
+├── components/tree/    # FamilyTreeView, TreeNode, TreeControls, ArchiveReadinessPanel
 ├── hooks/         # useFamily(), useStory(), usePhoto(), useEncryption()
 ├── pages/         # FamilyTree, MemberDetail, Stories, Photos, Legacy, Settings
 ├── router/        # index.ts, routes.ts, guards.ts
 ├── db/            # family-db.ts, story-db.ts, photo-db.ts, legacy-db.ts, secure-store.ts, index.ts
-├── utils/         # gedcom-parser.ts, crypto.ts, export.ts, image-filter.ts, member-status.ts, error-handler.ts
+├── utils/         # gedcom-parser.ts, crypto.ts, export.ts, image-filter.ts, member-status.ts, error-handler.ts, archive-readiness.ts, relation-repair.ts
 └── assets/        # 默认头像、空状态插画、图标
 ```
 

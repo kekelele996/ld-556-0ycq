@@ -19,6 +19,62 @@ await page.getByRole('img', { name: '交互式家谱树' }).waitFor()
 await page.getByPlaceholder('搜索成员').fill('林建国')
 await page.getByPlaceholder('搜索成员').press('Enter')
 await page.getByText('查看详情').waitFor()
+await page.keyboard.press('Escape')
+
+// 档案整备：面板渲染、完成度与待补项可见
+await page.getByText('档案整备').waitFor()
+await page.getByText('关系整备').waitFor()
+await page.getByText('待补：').first().waitFor()
+
+// 注入一边缺失、失效编号与冲突记录，验证关系整备
+await page.evaluate(async () => {
+  const db = await new Promise((resolve, reject) => {
+    const request = indexedDB.open('legacytree-db')
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => reject(request.error)
+  })
+  const tx = db.transaction('family', 'readwrite')
+  const store = tx.objectStore('family')
+  const members = await new Promise((resolve, reject) => {
+    const request = store.getAll()
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => reject(request.error)
+  })
+  await new Promise((resolve, reject) => {
+    const request = store.clear()
+    request.onsuccess = () => resolve()
+    request.onerror = () => reject(request.error)
+  })
+  for (const member of members) {
+    if (member.id === 'm-ancestor') member.childrenIds = []
+    if (member.id === 'm-child') member.parentId = ''
+    if (member.id === 'm-mother') {
+      member.spouseIds = ['m-father', 'm-ghost']
+      member.childrenIds = ['m-child']
+    }
+    store.put(member)
+  }
+  await new Promise((resolve, reject) => {
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+})
+await page.reload({ waitUntil: 'networkidle' })
+await page.getByRole('button', { name: '检查并修复关系' }).click()
+await page.getByText('为「林启明」补上子女「林建国」').waitFor()
+await page.getByText('为「林言」补上父母「林建国」').waitFor()
+await page.getByText('m-ghost 已失效').waitFor()
+await page.getByText('两条记录均已保留').waitFor()
+
+// 修复保存后成员详情同步变化
+await page.goto('http://127.0.0.1:38406/members/m-child', { waitUntil: 'networkidle' })
+await page.getByText('父母：林建国').waitFor()
+
+// 点击待补项进入成员页
+await page.goto('http://127.0.0.1:38406/tree', { waitUntil: 'networkidle' })
+await page.getByText('档案整备').waitFor()
+await page.locator('.archive-item').first().click()
+await page.waitForURL('**/members/**')
 
 await page.goto('http://127.0.0.1:38406/stories', { waitUntil: 'networkidle' })
 await page.getByText('家族故事').waitFor()

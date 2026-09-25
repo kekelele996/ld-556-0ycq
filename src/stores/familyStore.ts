@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { defaultMembers } from '@/constants/default-templates'
+import type { RelationRepairResult } from '@/types/archive'
 import type { FamilyMember, FamilyTreeNode, MemberRelationSummary } from '@/types/family'
 import { readFamilyMembers, writeFamilyMembers } from '@/db/family-db'
 import { getMemberStatus } from '@/utils/member-status'
+import { repairRelations } from '@/utils/relation-repair'
 
 function buildTree(members: FamilyMember[]): FamilyTreeNode[] {
   const map = new Map<string, FamilyTreeNode>(members.map((member) => [member.id, { ...member, status: getMemberStatus(member), children: [] }]))
@@ -89,5 +91,14 @@ export const useFamilyStore = defineStore('family', () => {
     await persist()
   }
 
-  return { members, loading, tree, memberOptions, hydrate, persist, getById, relations, addMember, updateMember, removeMember }
+  async function applyRelationRepair(): Promise<RelationRepairResult> {
+    const result = repairRelations(members.value)
+    if (result.fixes.length) {
+      members.value = result.members
+      await persist()
+    }
+    return result
+  }
+
+  return { members, loading, tree, memberOptions, hydrate, persist, getById, relations, addMember, updateMember, removeMember, applyRelationRepair }
 })
